@@ -1,11 +1,11 @@
 import itertools
 
-class Cnf:
+class Var:
   def __init__(self, id):
     self.data = frozenset([frozenset([id])])
 
   def __and__(self, other):
-    cnf = Cnf(1)
+    cnf = Var(1)
     cnf.data = frozenset.union(self.data, other.data)
     if cnf.data != frozenset([frozenset([1])]):
       cnf.data = frozenset.difference(cnf.data, frozenset([frozenset([1])]))
@@ -20,7 +20,7 @@ class Cnf:
     return cnf
 
   def __or__(self, other):
-    cnf = Cnf(1)
+    cnf = Var(1)
     for x in self.data:
       for y in other.data:
         u = frozenset.union(x, y)
@@ -32,22 +32,22 @@ class Cnf:
           u = frozenset.difference(u, frozenset([-1]))
         if 1 in u:
           u = frozenset([1])
-        c = Cnf(1)
+        c = Var(1)
         c.data = frozenset([u])
         cnf = c & cnf
     return cnf
 
   def __neg__(self):
-    k = Cnf(1)
+    k = Var(1)
     for li in itertools.product(*self.data):
-      c = Cnf(-1)
+      c = Var(-1)
       for i in li:
-        ci = Cnf(i)
+        ci = Var(i)
         c |= ci
       k &= c
     return k
 
 if __name__ == "__main__":
-  c = - (Cnf(-2) & Cnf(3) & (Cnf(4) | Cnf(5)))
+  c = - (Var(-2) & Var(3) & (Var(4) | Var(5)))
   print(c.data)
 
