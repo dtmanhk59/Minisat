@@ -47,10 +47,6 @@ class Var:
       k &= c
     return k
 
-  def print(self):
-    print (self.__data)
-    return ""
-
   def __str__(self):
     ret = []
     for d in self.__data:
@@ -58,13 +54,13 @@ class Var:
     return "(" + ") & (".join(ret) + ")"
 
   def __xor__(self, other):
-    """
-    ^
-    """
     return (self | other) & (-self | -other)
+
+  def __rshift__(self, other):
+    return -self | other
 
 
 if __name__ == "__main__":
-  c = Var(2) ^ Var(3) ^ Var(4)
+  c = (Var(2) ^ Var(4))
   print(c)
 
