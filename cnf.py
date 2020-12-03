@@ -1,92 +1,53 @@
-class Cnf:
-  def __init__(self):
-    self.data = frozenset([frozenset([1])])
-  
-  def cnf_false(self):
-    cnf = Cnf()
-    cnf.data = frozenset([frozenset([-1])])
-    return cnf
+import itertools
 
-  def cnf_true(self):
-    cnf = Cnf()
-    cnf.data = frozenset([frozenset([1])])
-    return cnf
+class Cnf:
+  def __init__(self, id):
+    self.data = frozenset([frozenset([id])])
 
   def __and__(self, other):
-    cnf = Cnf()
-    # A & F = F
-    if other.is_false():
-      return self.cnf_false()
-    
-    # A & T = A
-    if other.is_true():
-      cnf.data = self.data
-      return cnf
-    
-    # T & A = A
-    if self.is_true():
-      cnf.data = other.data
-      return cnf
-
-    # F & A = F
-    if self.is_false():
-      return self.cnf_false()
-
-    # A & -A = F
-    self_var = self.get_var()
-    other_var = other.get_var()
-    if self_var is not None and other_var is not None:
-      if self_var == -other_var:
-        return self.cnf_false()
-
-    # A & A = A
-    tmp = frozenset([])
-    cnf.data = tmp.union(self.data, other.data)
+    cnf = Cnf(1)
+    cnf.data = frozenset.union(self.data, other.data)
+    if cnf.data != frozenset([frozenset([1])]):
+      cnf.data = frozenset.difference(cnf.data, frozenset([frozenset([1])]))
+    if frozenset([-1]) in cnf.data:
+      cnf.data = frozenset([frozenset([-1])])
+    for u in cnf.data:
+      if len(u) == 1:
+        for e in u:
+          for u1 in cnf.data:
+            if -e in u1:
+              cnf.data = frozenset([frozenset([-1])])
     return cnf
 
   def __or__(self, other):
-    cnf = Cnf()
-    for self_u in self.data:
-      for other_u in other.data:
-        tmp = frozenset([])
-        # A | A = A
-        tmp = tmp.union(self_u, other_u)
-        # A | -A = T
-        for e in tmp:
-          if -e in tmp:
-            tmp = frozenset([1])
-        # A | T = T
-        if 1 in tmp:
-          tmp = frozenset([1])
-        # A | F = A
-        tmp.symmetric_difference(frozenset([-1]))  
-        cnftmp = Cnf()
-        cnftmp.data = frozenset([tmp])
-        cnf = (cnf & cnftmp)
+    cnf = Cnf(1)
+    for x in self.data:
+      for y in other.data:
+        u = frozenset.union(x, y)
+        for x in u:
+          if -x in u:
+            u = frozenset({1})
+            break
+        if u != frozenset([-1]):
+          u = frozenset.difference(u, frozenset([-1]))
+        if 1 in u:
+          u = frozenset([1])
+        c = Cnf(1)
+        c.data = frozenset([u])
+        cnf = c & cnf
     return cnf
 
-  def is_true(self):
-    return self.data == frozenset([frozenset([1])])
-  
-  def get_var(self):
-    if len(self.data) == 1:
-      for u in self.data:
-        if len(u) == 1:
-          for e in u:
-            return e
-    return None
-
-  def is_false(self):
-    return self.data == frozenset([frozenset([-1])])
-
-  def __str__(self):
-    print(self.data)
-    return ""
+  def __neg__(self):
+    k = Cnf(1)
+    for li in itertools.product(*self.data):
+      c = Cnf(-1)
+      for i in li:
+        ci = Cnf(i)
+        c |= ci
+      k &= c
+    return k
 
 if __name__ == "__main__":
-  cnf1 = Cnf()
-  cnf1.data = frozenset([frozenset([1, 2, 3, -1]), frozenset([5,6])])
-  cnf2 = Cnf()
-  cnf2.data = frozenset([frozenset([1]), frozenset([3])])
-  cnf3 = cnf1 | cnf2
-  print(cnf3)
+  c = - (Cnf(-2) & Cnf(3) & (Cnf(4) | Cnf(5)))
+  print(c.data)
+
