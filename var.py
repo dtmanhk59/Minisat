@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
 import itertools
 
-class Var(ABC):
+class Var:
   def __init__(self, id):
     self.__val = frozenset([frozenset([id])])
 
